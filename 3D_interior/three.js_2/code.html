@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_6 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_6" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_6');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  // Interactive Three.js Architectural Dollhouse Room with Exploded View Cutaway
+const container = document.getElementById('threejs-dollhouse-container') || document.body;
+const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+scene.background = null;
+
+const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+camera.position.set(22, 18, 22);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+container.appendChild(renderer.domElement);
+
+// Lighting Setup
+const ambientLight = new THREE.AmbientLight(0xfff5ea, 1.2);
+scene.add(ambientLight);
+
+const mainSun = new THREE.DirectionalLight(0xffe8d6, 2.2);
+mainSun.position.set(18, 30, 15);
+mainSun.castShadow = true;
+mainSun.shadow.mapSize.width = 2048;
+mainSun.shadow.mapSize.height = 2048;
+mainSun.shadow.camera.near = 0.5;
+mainSun.shadow.camera.far = 70;
+const d = 16;
+mainSun.shadow.camera.left = -d;
+mainSun.shadow.camera.right = d;
+mainSun.shadow.camera.top = d;
+mainSun.shadow.camera.bottom = -d;
+mainSun.shadow.bias = -0.0005;
+scene.add(mainSun);
+
+const fillLight = new THREE.DirectionalLight(0x8fa3bf, 0.8);
+fillLight.position.set(-15, 12, -15);
+scene.add(fillLight);
+
+// Master group holding all elements
+const dollhouse = new THREE.Group();
+scene.add(dollhouse);
+
+// Materials
+const foundationMat = new THREE.MeshLambertMaterial({ color: 0x14161b });
+const wallMat = new THREE.MeshLambertMaterial({ color: 0x1f232b });
+const floorWoodMat = new THREE.MeshLambertMaterial({ color: 0xc8b293 });
+const floorTileMat = new THREE.MeshLambertMaterial({ color: 0x2d3139 });
+const rugMat = new THREE.MeshLambertMaterial({ color: 0xe5ded3 });
+const glassMat = new THREE.MeshLambertMaterial({ color: 0x7fa2b6, transparent: true, opacity: 0.35 });
+const brassMat = new THREE.MeshLambertMaterial({ color: 0xd4af37 });
+const woodDarkMat = new THREE.MeshLambertMaterial({ color: 0x3d2b1f });
+
+let primarySofaMat = new THREE.MeshLambertMaterial({ color: 0xf3efe6 });
+
+// Subgroups for Layered Exploded View Hierarchy
+// 1. Foundation Base Slab Layer (shifts down)
+const groupFoundation = new THREE.Group();
+dollhouse.add(groupFoundation);
+
+// 2. Finished Floor Slabs (shifts slightly down or stays base anchor)
+const groupFloorSlabs = new THREE.Group();
+dollhouse.add(groupFloorSlabs);
+
+// 3. Walls & Architectural Enclosure (elevates moderately up)
+const groupWalls = new THREE.Group();
+dollhouse.add(groupWalls);
+
+// 4. Heavy Millwork & Fixtures (low counters, bar, dividers)
+const groupFixtures = new THREE.Group();
+dollhouse.add(groupFixtures);
+
+// 5. Furniture & Soft Furnishings (elevates high into exploded space with slight lateral drift)
+const groupFurniture = new THREE.Group();
+dollhouse.add(groupFurniture);
+
+// 6. Overhead Lighting & Ceiling Elements (lifts highest)
+const groupOverhead = new THREE.Group();
+dollhouse.add(groupOverhead);
+
+// 7. Exploded Guide Alignment Lines
+const groupExplodeGuides = new THREE.Group();
+groupExplodeGuides.visible = false;
+dollhouse.add(groupExplodeGuides);
+
+// --- Build Layer 1: Foundation Slab ---
+const baseGeo = new THREE.BoxGeometry(18, 0.8, 14);
+const baseMesh = new THREE.Mesh(baseGeo, foundationMat);
+baseMesh.position.y = -0.4;
+baseMesh.receiveShadow = true;
+groupFoundation.add(baseMesh);
+
+// --- Build Layer 2: Floor Slabs ---
+const livingFloor = new THREE.Mesh(new THREE.BoxGeometry(11, 0.15, 13.6), floorWoodMat);
+livingFloor.position.set(-3.3, 0.05, 0);
+livingFloor.receiveShadow = true;
+groupFloorSlabs.add(livingFloor);
+
+const diningFloor = new THREE.Mesh(new THREE.BoxGeometry(6.6, 0.18, 13.6), floorTileMat);
+diningFloor.position.set(5.5, 0.06, 0);
+diningFloor.receiveShadow = true;
+groupFloorSlabs.add(diningFloor);
+
+// Rug sits directly on floor slab
+const rug = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 7.5), rugMat);
+rug.position.set(-3.4, 0.16, -0.5);
+rug.receiveShadow = true;
+groupFloorSlabs.add(rug);
+
+// --- Build Layer 3: Walls & Architectural Enclosure ---
+const backWall = new THREE.Mesh(new THREE.BoxGeometry(17.8, 6.5, 0.5), wallMat);
+backWall.position.set(0, 3.25, -6.6);
+backWall.castShadow = true;
+backWall.receiveShadow = true;
+groupWalls.add(backWall);
+
+// Back Accent Wood Slat Paneling
+const slatGroup = new THREE.Group();
+for(let i = -7.5; i < 2.5; i += 0.4) {
+  const slat = new THREE.Mesh(new THREE.BoxGeometry(0.2, 5.8, 0.15), woodDarkMat);
+  slat.position.set(i, 3.1, -6.3);
+  slat.castShadow = true;
+  slatGroup.add(slat);
+}
+groupWalls.add(slatGroup);
+
+const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6.5, 13.8), wallMat);
+leftWall.position.set(-8.7, 3.25, 0);
+leftWall.castShadow = true;
+leftWall.receiveShadow = true;
+groupWalls.add(leftWall);
+
+const windowCutout = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3.8, 7.5), glassMat);
+windowCutout.position.set(-8.7, 3.6, -1);
+groupWalls.add(windowCutout);
+
+const dividerCol = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6.5, 2.5), wallMat);
+dividerCol.position.set(2.2, 3.25, -5.3);
+dividerCol.castShadow = true;
+groupWalls.add(dividerCol);
+
+// --- Build Layer 4: Millwork & Counters ---
+const barCounter = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.2, 5), woodDarkMat);
+barCounter.position.set(2.2, 1.1, 1.5);
+barCounter.castShadow = true;
+barCounter.receiveShadow = true;
+groupFixtures.add(barCounter);
+
+const barTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.15, 5.2), new THREE.MeshLambertMaterial({ color: 0xf5f5f7 }));
+barTop.position.set(2.2, 2.25, 1.5);
+barTop.castShadow = true;
+groupFixtures.add(barTop);
+
+// --- Build Layer 5: Furniture & Soft Furnishings ---
+const sofaMeshes = [];
+
+const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(7, 0.7, 3.2), primarySofaMat);
+sofaBase.position.set(-3.5, 0.45, -2);
+sofaBase.castShadow = true;
+sofaBase.receiveShadow = true;
+groupFurniture.add(sofaBase);
+sofaMeshes.push(sofaBase);
+
+const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(7, 1.3, 0.8), primarySofaMat);
+sofaBack.position.set(-3.5, 1.2, -3.2);
+sofaBack.castShadow = true;
+groupFurniture.add(sofaBack);
+sofaMeshes.push(sofaBack);
+
+const sofaChaise = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 3.8), primarySofaMat);
+sofaChaise.position.set(-5.8, 0.45, 0.8);
+sofaChaise.castShadow = true;
+groupFurniture.add(sofaChaise);
+sofaMeshes.push(sofaChaise);
+
+const c1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.3), brassMat);
+c1.position.set(-2, 1.1, -2.6);
+c1.rotation.y = 0.2;
+groupFurniture.add(c1);
+
+const c2 = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.3), new THREE.MeshLambertMaterial({ color: 0x8a9284 }));
+c2.position.set(-4.5, 1.15, -2.7);
+groupFurniture.add(c2);
+
+// Coffee Table
+const coffeeTableTop = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.15, 32), new THREE.MeshLambertMaterial({ color: 0xe8e2d5 }));
+coffeeTableTop.position.set(-3.2, 0.9, 1.2);
+coffeeTableTop.castShadow = true;
+coffeeTableTop.receiveShadow = true;
+groupFurniture.add(coffeeTableTop);
+
+const coffeeTableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 0.8, 32), brassMat);
+coffeeTableLeg.position.set(-3.2, 0.45, 1.2);
+coffeeTableLeg.castShadow = true;
+groupFurniture.add(coffeeTableLeg);
+
+// Lounge Chair
+const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 1.8), primarySofaMat);
+chairSeat.position.set(-0.8, 0.5, 1.6);
+chairSeat.rotation.y = -0.55;
+chairSeat.castShadow = true;
+groupFurniture.add(chairSeat);
+sofaMeshes.push(chairSeat);
+
+const chairBack = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.2, 0.4), primarySofaMat);
+chairBack.position.set(-0.5, 1.1, 2.2);
+chairBack.rotation.y = -0.55;
+chairBack.castShadow = true;
+groupFurniture.add(chairBack);
+sofaMeshes.push(chairBack);
+
+// Floor Lamp
+const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.08, 24), brassMat);
+lampBase.position.set(-7.2, 0.15, -4.5);
+groupFurniture.add(lampBase);
+
+const lampPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 5, 16), brassMat);
+lampPole.position.set(-7.2, 2.5, -4.5);
+groupFurniture.add(lampPole);
+
+const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.6, 24, 1, true), brassMat);
+lampShade.position.set(-6.2, 4.8, -3.8);
+lampShade.rotation.x = 0.3;
+groupFurniture.add(lampShade);
+
+// Potted Tree
+const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.5, 1.1, 24), new THREE.MeshLambertMaterial({ color: 0xded8ce }));
+pot.position.set(-7.5, 0.65, 4.8);
+pot.castShadow = true;
+groupFurniture.add(pot);
+
+const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 12), woodDarkMat);
+trunk.position.set(-7.5, 2.1, 4.8);
+groupFurniture.add(trunk);
+
+const foliageMat = new THREE.MeshLambertMaterial({ color: 0x2e4a36 });
+for(let k = 0; k < 6; k++) {
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 8), foliageMat);
+  leaf.scale.set(1.4, 0.4, 1.1);
+  const ang = (k / 6) * Math.PI * 2;
+  leaf.position.set(-7.5 + Math.cos(ang)*0.6, 2.6 + (k%3)*0.4, 4.8 + Math.sin(ang)*0.6);
+  leaf.rotation.y = ang;
+  leaf.castShadow = true;
+  groupFurniture.add(leaf);
+}
+
+// Dining Table & Chairs
+const diningTable = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.15, 2.4), woodDarkMat);
+diningTable.position.set(5.5, 1.8, -2);
+diningTable.castShadow = true;
+diningTable.receiveShadow = true;
+groupFurniture.add(diningTable);
+
+const legGeo = new THREE.CylinderGeometry(0.07, 0.05, 1.7, 12);
+[[-3.8, -3], [-3.8, -1], [3.8, -3], [3.8, -1]].forEach(([lx, lz]) => {
+  const tleg = new THREE.Mesh(legGeo, brassMat);
+  tleg.position.set(5.5 + lx*0.48, 0.9, -2 + lz*0.35);
+  tleg.castShadow = true;
+  groupFurniture.add(tleg);
+});
+
+for(let c = -1.2; c <= 1.2; c += 2.4) {
+  const seatA = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.9), primarySofaMat);
+  seatA.position.set(5.5 + c, 1.0, -3.2);
+  groupFurniture.add(seatA);
+  sofaMeshes.push(seatA);
+
+  const backA = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.1), brassMat);
+  backA.position.set(5.5 + c, 1.5, -3.6);
+  groupFurniture.add(backA);
+
+  const seatB = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.9), primarySofaMat);
+  seatB.position.set(5.5 + c, 1.0, -0.8);
+  groupFurniture.add(seatB);
+  sofaMeshes.push(seatB);
+
+  const backB = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.1), brassMat);
+  backB.position.set(5.5 + c, 1.5, -0.4);
+  groupFurniture.add(backB);
+}
+
+// --- Build Layer 6: Overhead Pendant Lights ---
+for(let p = -1; p <= 1; p += 2) {
+  const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.5, 8), brassMat);
+  cord.position.set(5.5 + p, 4.5, -2);
+  groupOverhead.add(cord);
+
+  const pendant = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.5, 24, 1, true), brassMat);
+  pendant.position.set(5.5 + p, 3.2, -2);
+  pendant.rotation.x = Math.PI;
+  groupOverhead.add(pendant);
+}
+
+// --- Exploded Alignment Extension Lines (Golden Dashed Lines connecting layers) ---
+const guideMat = new THREE.LineDashedMaterial({ color: 0xd4af37, dashSize: 0.3, gapSize: 0.2, transparent: true, opacity: 0.75 });
+const corners = [
+  [-9, 7], [9, 7], [-9, -7], [9, -7],
+  [-3.5, -2], [5.5, -2]
+];
+corners.forEach(([cx, cz]) => {
+  const lineGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(cx, -4, cz),
+    new THREE.Vector3(cx, 16, cz)
+  ]);
+  const guideLine = new THREE.Line(lineGeo, guideMat);
+  guideLine.computeLineDistances();
+  groupExplodeGuides.add(guideLine);
+});
+
+// Dimension Markers
+const dimGroup = new THREE.Group();
+const dimLineMat = new THREE.LineDashedMaterial({ color: 0xd4af37, dashSize: 0.4, gapSize: 0.2 });
+const ptsW = [new THREE.Vector3(-9, 0, 7.5), new THREE.Vector3(9, 0, 7.5)];
+const geoW = new THREE.BufferGeometry().setFromPoints(ptsW);
+const lineW = new THREE.Line(geoW, dimLineMat);
+lineW.computeLineDistances();
+dimGroup.add(lineW);
+
+const ptsD = [new THREE.Vector3(9.5, 0, -7), new THREE.Vector3(9.5, 0, 7)];
+const geoD = new THREE.BufferGeometry().setFromPoints(ptsD);
+const lineD = new THREE.Line(geoD, dimLineMat);
+lineD.computeLineDistances();
+dimGroup.add(lineD);
+
+dollhouse.add(dimGroup);
+
+// --- Exploded View Animation State & Logic ---
+let explodeAmount = 0.0;       // 0.0 = assembled, 1.0 = fully exploded
+let targetExplodeAmount = 0.0;
+let isExploded = false;
+
+window.setExplodedCutaway = function(stateOrAmount) {
+  if (typeof stateOrAmount === 'boolean') {
+    isExploded = stateOrAmount;
+    targetExplodeAmount = stateOrAmount ? 1.0 : 0.0;
+  } else if (typeof stateOrAmount === 'number') {
+    targetExplodeAmount = Math.max(0, Math.min(1, stateOrAmount));
+    isExploded = targetExplodeAmount > 0.05;
+  } else {
+    // toggle
+    isExploded = !isExploded;
+    targetExplodeAmount = isExploded ? 1.0 : 0.0;
+  }
+  
+  // Update UI indicators if present
+  const btn = document.getElementById('exploded-toggle-btn');
+  if (btn) {
+    if (isExploded) {
+      btn.classList.add('bg-amber-400', 'text-black', 'shadow-amber-500/25');
+      btn.classList.remove('bg-white/5', 'text-white/80');
+    } else {
+      btn.classList.remove('bg-amber-400', 'text-black', 'shadow-amber-500/25');
+      btn.classList.add('bg-white/5', 'text-white/80');
+    }
+  }
+
+  // Update room annotations visibility during exploded view
+  const livingTag = document.getElementById('room-tag-living');
+  const diningTag = document.getElementById('room-tag-dining');
+  if (livingTag && diningTag) {
+    const scaleVal = isExploded ? 'scale(1.05)' : 'scale(1)';
+    livingTag.style.transform = scaleVal;
+    diningTag.style.transform = scaleVal;
+  }
+};
+
+window.toggleExplodedCutaway = function() {
+  window.setExplodedCutaway();
+};
+
+// --- Orbit & Tilt Navigation Controls with Inertia ---
+let isDragging = false;
+let prevMousePos = { x: 0, y: 0 };
+let rotVelocity = { x: 0, y: 0 };
+let rotTarget = { y: 0.35, x: 0.25 };
+let currentRot = { y: 0.35, x: 0.25 };
+let currentDistance = 32;
+let targetDistance = 32;
+
+dollhouse.rotation.y = currentRot.y;
+dollhouse.rotation.x = currentRot.x;
+
+const dom = renderer.domElement;
+dom.style.cursor = 'grab';
+
+dom.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  prevMousePos = { x: e.clientX, y: e.clientY };
+  dom.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    dom.style.cursor = 'grab';
+  }
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMousePos.x;
+  const dy = e.clientY - prevMousePos.y;
+  prevMousePos = { x: e.clientX, y: e.clientY };
+
+  rotVelocity.y = dx * 0.007;
+  rotVelocity.x = dy * 0.007;
+  rotTarget.y += rotVelocity.y;
+  rotTarget.x += rotVelocity.x;
+
+  rotTarget.x = Math.max(0.02, Math.min(1.48, rotTarget.x));
+});
+
+dom.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - prevMousePos.x;
+  const dy = e.touches[0].clientY - prevMousePos.y;
+  prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+  rotTarget.y += dx * 0.009;
+  rotTarget.x = Math.max(0.02, Math.min(1.48, rotTarget.x + dy * 0.009));
+}, { passive: true });
+
+window.addEventListener('touchend', () => { isDragging = false; });
+
+dom.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  targetDistance += e.deltaY * 0.025;
+  targetDistance = Math.max(16, Math.min(52, targetDistance));
+}, { passive: false });
+
+dom.addEventListener('dblclick', () => {
+  resetCameraView();
+});
+
+function resetCameraView() {
+  rotTarget.y = 0.35;
+  rotTarget.x = 0.28;
+  targetDistance = 32;
+}
+
+window.setDollhouseCamera = function(preset) {
+  if (preset === 'isometric') {
+    rotTarget.y = 0.785;
+    rotTarget.x = 0.38;
+    targetDistance = 32;
+  } else if (preset === 'floorplan') {
+    rotTarget.y = 0;
+    rotTarget.x = 1.45;
+    targetDistance = 36;
+  } else if (preset === 'front') {
+    rotTarget.y = 0;
+    rotTarget.x = 0.08;
+    targetDistance = 28;
+  } else if (preset === 'left') {
+    rotTarget.y = 1.57;
+    rotTarget.x = 0.15;
+    targetDistance = 28;
+  } else if (preset === 'right') {
+    rotTarget.y = -1.57;
+    rotTarget.x = 0.15;
+    targetDistance = 28;
+  } else if (preset === 'reset') {
+    resetCameraView();
+  }
+};
+
+window.setDollhouseZoom = function(val) {
+  targetDistance = 50 - (val / 100) * 34;
+};
+
+const swatchColorMap = {
+  'boucle': 0xf3efe6,
+  'cognac': 0x8e4a23,
+  'velvet': 0x184234,
+  'oak': 0xd9c29d,
+  'brass': 0xd4af37,
+  'charcoal': 0x24272c
+};
+
+window.applyMaterialSwatch = function(swatchKey) {
+  const hex = swatchColorMap[swatchKey] || 0xf3efe6;
+  sofaMeshes.forEach(mesh => {
+    mesh.material.color.setHex(hex);
+  });
+};
+
+window.setStudioLighting = function(preset) {
+  if (preset === 'morning') {
+    mainSun.color.setHex(0xffe2b8);
+    mainSun.intensity = 2.4;
+    ambientLight.color.setHex(0xffe8dc);
+    ambientLight.intensity = 1.1;
+  } else if (preset === 'midday') {
+    mainSun.color.setHex(0xffffff);
+    mainSun.intensity = 2.0;
+    ambientLight.color.setHex(0xeef3f8);
+    ambientLight.intensity = 1.3;
+  } else if (preset === 'twilight') {
+    mainSun.color.setHex(0x3e5b85);
+    mainSun.intensity = 0.8;
+    ambientLight.color.setHex(0x1d2433);
+    ambientLight.intensity = 0.9;
+  }
+};
+
+window.toggleDimensions = function(show) {
+  dimGroup.visible = show;
+};
+
+window.addEventListener('resize', () => {
+  const w = container.clientWidth || window.innerWidth;
+  const h = container.clientHeight || window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+// Render Loop with Exploded Kinematic Interpolation
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Rotation & zoom easing
+  currentRot.y += (rotTarget.y - currentRot.y) * 0.08;
+  currentRot.x += (rotTarget.x - currentRot.x) * 0.08;
+  currentDistance += (targetDistance - currentDistance) * 0.08;
+
+  dollhouse.rotation.y = currentRot.y;
+  dollhouse.rotation.x = currentRot.x;
+
+  // Exploded View smooth spring interpolation
+  explodeAmount += (targetExplodeAmount - explodeAmount) * 0.075;
+
+  // Hierarchical layer displacement offsets:
+  // 1. Foundation slab descends downward
+  groupFoundation.position.y = -explodeAmount * 2.8;
+
+  // 2. Floor slabs lift gently or remain reference datum
+  groupFloorSlabs.position.y = explodeAmount * 0.4;
+
+  // 3. Walls and architectural envelope ascend up and outward
+  groupWalls.position.y = explodeAmount * 4.6;
+  groupWalls.position.z = -explodeAmount * 1.5;
+
+  // 4. Millwork and counters float moderately
+  groupFixtures.position.y = explodeAmount * 2.5;
+
+  // 5. Furniture layer explodes upwards into clear cutaway sightlines
+  groupFurniture.position.y = explodeAmount * 6.2;
+  // slight subtle dispersal to celebrate individual pieces
+  groupFurniture.position.x = -explodeAmount * 0.8;
+
+  // 6. Overhead pendants lift high
+  groupOverhead.position.y = explodeAmount * 9.5;
+
+  // 7. Exploded architectural guide lines
+  groupExplodeGuides.visible = explodeAmount > 0.05;
+  guideMat.opacity = Math.min(0.85, explodeAmount * 1.1);
+
+  camera.position.set(0, 0, currentDistance);
+  // Slightly adjust camera lookAt when exploded to keep composition centered
+  camera.lookAt(0, 2.2 + explodeAmount * 1.8, 0);
+
+  if (!isDragging) {
+    rotTarget.y += 0.0003;
+  }
+
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_6 -->
+</body>
+</html>

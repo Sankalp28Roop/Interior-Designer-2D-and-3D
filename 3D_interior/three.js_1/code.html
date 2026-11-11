@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_3 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_3" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_3');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  // Interactive Three.js Architectural Dollhouse Room
+const container = document.getElementById('threejs-dollhouse-container') || document.body;
+const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+scene.background = null; // transparent to blend with dark slate backdrop
+
+const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+camera.position.set(22, 18, 22);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+container.appendChild(renderer.domElement);
+
+// Lighting Setup for Studio Ambience
+const ambientLight = new THREE.AmbientLight(0xfff5ea, 1.2);
+scene.add(ambientLight);
+
+const mainSun = new THREE.DirectionalLight(0xffe8d6, 2.2);
+mainSun.position.set(18, 30, 15);
+mainSun.castShadow = true;
+mainSun.shadow.mapSize.width = 2048;
+mainSun.shadow.mapSize.height = 2048;
+mainSun.shadow.camera.near = 0.5;
+mainSun.shadow.camera.far = 70;
+const d = 16;
+mainSun.shadow.camera.left = -d;
+mainSun.shadow.camera.right = d;
+mainSun.shadow.camera.top = d;
+mainSun.shadow.camera.bottom = -d;
+mainSun.shadow.bias = -0.0005;
+scene.add(mainSun);
+
+const fillLight = new THREE.DirectionalLight(0x8fa3bf, 0.8);
+fillLight.position.set(-15, 12, -15);
+scene.add(fillLight);
+
+// Group holding all dollhouse elements for smooth rotation
+const dollhouse = new THREE.Group();
+scene.add(dollhouse);
+
+// Materials definition
+const wallMat = new THREE.MeshLambertMaterial({ color: 0x1f232b });
+const floorWoodMat = new THREE.MeshLambertMaterial({ color: 0xc8b293 }); // White Oak base
+const floorTileMat = new THREE.MeshLambertMaterial({ color: 0x2d3139 });
+const rugMat = new THREE.MeshLambertMaterial({ color: 0xe5ded3 });
+const glassMat = new THREE.MeshLambertMaterial({ color: 0x7fa2b6, transparent: true, opacity: 0.35 });
+const brassMat = new THREE.MeshLambertMaterial({ color: 0xd4af37 });
+const woodDarkMat = new THREE.MeshLambertMaterial({ color: 0x3d2b1f });
+
+// Primary accent furniture materials that can be swapped dynamically
+let primarySofaMat = new THREE.MeshLambertMaterial({ color: 0xf3efe6 }); // Beige Boucle default
+
+// --- Build Dollhouse Architecture (Cutaway Isometric View) ---
+
+// Base Foundation
+const baseGeo = new THREE.BoxGeometry(18, 0.8, 14);
+const baseMesh = new THREE.Mesh(baseGeo, new THREE.MeshLambertMaterial({ color: 0x14161b }));
+baseMesh.position.y = -0.4;
+baseMesh.receiveShadow = true;
+dollhouse.add(baseMesh);
+
+// Living Room Floor (Oak wood plank appearance)
+const livingFloor = new THREE.Mesh(new THREE.BoxGeometry(11, 0.1, 13.6), floorWoodMat);
+livingFloor.position.set(-3.3, 0.05, 0);
+livingFloor.receiveShadow = true;
+dollhouse.add(livingFloor);
+
+// Dining / Kitchenette Floor (Slate tiles)
+const diningFloor = new THREE.Mesh(new THREE.BoxGeometry(6.6, 0.12, 13.6), floorTileMat);
+diningFloor.position.set(5.5, 0.06, 0);
+diningFloor.receiveShadow = true;
+dollhouse.add(diningFloor);
+
+// Back Wall (Cutaway - low enough to view inside, high enough for architectural definition)
+const backWall = new THREE.Mesh(new THREE.BoxGeometry(17.8, 6.5, 0.5), wallMat);
+backWall.position.set(0, 3.25, -6.6);
+backWall.castShadow = true;
+backWall.receiveShadow = true;
+dollhouse.add(backWall);
+
+// Back Accent Wood Slat Paneling
+const slatGroup = new THREE.Group();
+for(let i = -7.5; i < 2.5; i += 0.4) {
+  const slat = new THREE.Mesh(new THREE.BoxGeometry(0.2, 5.8, 0.15), woodDarkMat);
+  slat.position.set(i, 3.1, -6.3);
+  slat.castShadow = true;
+  slatGroup.add(slat);
+}
+dollhouse.add(slatGroup);
+
+// Left Side Wall (Cutaway slope)
+const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6.5, 13.8), wallMat);
+leftWall.position.set(-8.7, 3.25, 0);
+leftWall.castShadow = true;
+leftWall.receiveShadow = true;
+dollhouse.add(leftWall);
+
+// Window Frame on Left Wall
+const windowCutout = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3.8, 7.5), glassMat);
+windowCutout.position.set(-8.7, 3.6, -1);
+dollhouse.add(windowCutout);
+
+// Interior Divider Half-Wall / Arch column
+const dividerCol = new THREE.Mesh(new THREE.BoxGeometry(0.5, 6.5, 2.5), wallMat);
+dividerCol.position.set(2.2, 3.25, -5.3);
+dividerCol.castShadow = true;
+dollhouse.add(dividerCol);
+
+// Low divider credenza / bar counter
+const barCounter = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.2, 5), woodDarkMat);
+barCounter.position.set(2.2, 1.1, 1.5);
+barCounter.castShadow = true;
+barCounter.receiveShadow = true;
+dollhouse.add(barCounter);
+
+const barTop = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.15, 5.2), new THREE.MeshLambertMaterial({ color: 0xf5f5f7 }));
+barTop.position.set(2.2, 2.25, 1.5);
+barTop.castShadow = true;
+dollhouse.add(barTop);
+
+// --- Furniture: Living Room Area ---
+// Large Curvilinear / Modern Sectional Sofa
+const sofaMeshes = [];
+
+const sofaBase = new THREE.Mesh(new THREE.BoxGeometry(7, 0.7, 3.2), primarySofaMat);
+sofaBase.position.set(-3.5, 0.45, -2);
+sofaBase.castShadow = true;
+sofaBase.receiveShadow = true;
+dollhouse.add(sofaBase);
+sofaMeshes.push(sofaBase);
+
+const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(7, 1.3, 0.8), primarySofaMat);
+sofaBack.position.set(-3.5, 1.2, -3.2);
+sofaBack.castShadow = true;
+dollhouse.add(sofaBack);
+sofaMeshes.push(sofaBack);
+
+const sofaChaise = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 3.8), primarySofaMat);
+sofaChaise.position.set(-5.8, 0.45, 0.8);
+sofaChaise.castShadow = true;
+dollhouse.add(sofaChaise);
+sofaMeshes.push(sofaChaise);
+
+// Accent Cushions
+const c1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.3), brassMat);
+c1.position.set(-2, 1.1, -2.6);
+c1.rotation.y = 0.2;
+dollhouse.add(c1);
+
+const c2 = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.3), new THREE.MeshLambertMaterial({ color: 0x8a9284 }));
+c2.position.set(-4.5, 1.15, -2.7);
+dollhouse.add(c2);
+
+// Sculptural Coffee Table (Travertine + Brass)
+const coffeeTableTop = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.15, 32), new THREE.MeshLambertMaterial({ color: 0xe8e2d5 }));
+coffeeTableTop.position.set(-3.2, 0.9, 1.2);
+coffeeTableTop.castShadow = true;
+coffeeTableTop.receiveShadow = true;
+dollhouse.add(coffeeTableTop);
+
+const coffeeTableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 0.8, 32), brassMat);
+coffeeTableLeg.position.set(-3.2, 0.45, 1.2);
+coffeeTableLeg.castShadow = true;
+dollhouse.add(coffeeTableLeg);
+
+// Large Textured Area Rug
+const rug = new THREE.Mesh(new THREE.BoxGeometry(8, 0.05, 7.5), rugMat);
+rug.position.set(-3.4, 0.1, -0.5);
+rug.receiveShadow = true;
+dollhouse.add(rug);
+
+// Modern Lounge Chair
+const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.5, 1.8), primarySofaMat);
+chairSeat.position.set(-0.8, 0.5, 1.6);
+chairSeat.rotation.y = -0.55;
+chairSeat.castShadow = true;
+dollhouse.add(chairSeat);
+sofaMeshes.push(chairSeat);
+
+const chairBack = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.2, 0.4), primarySofaMat);
+chairBack.position.set(-0.5, 1.1, 2.2);
+chairBack.rotation.y = -0.55;
+chairBack.castShadow = true;
+dollhouse.add(chairBack);
+sofaMeshes.push(chairBack);
+
+// Architectural Floor Lamp (Arched Brass)
+const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.08, 24), brassMat);
+lampBase.position.set(-7.2, 0.15, -4.5);
+dollhouse.add(lampBase);
+
+const lampPole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 5, 16), brassMat);
+lampPole.position.set(-7.2, 2.5, -4.5);
+dollhouse.add(lampPole);
+
+const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.6, 24, 1, true), brassMat);
+lampShade.position.set(-6.2, 4.8, -3.8);
+lampShade.rotation.x = 0.3;
+dollhouse.add(lampShade);
+
+// Potted Fiddle Leaf Fig Tree
+const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.5, 1.1, 24), new THREE.MeshLambertMaterial({ color: 0xded8ce }));
+pot.position.set(-7.5, 0.65, 4.8);
+pot.castShadow = true;
+dollhouse.add(pot);
+
+const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 2.2, 12), woodDarkMat);
+trunk.position.set(-7.5, 2.1, 4.8);
+dollhouse.add(trunk);
+
+const foliageMat = new THREE.MeshLambertMaterial({ color: 0x2e4a36 });
+for(let k = 0; k < 6; k++) {
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 8), foliageMat);
+  leaf.scale.set(1.4, 0.4, 1.1);
+  const ang = (k / 6) * Math.PI * 2;
+  leaf.position.set(-7.5 + Math.cos(ang)*0.6, 2.6 + (k%3)*0.4, 4.8 + Math.sin(ang)*0.6);
+  leaf.rotation.y = ang;
+  leaf.castShadow = true;
+  dollhouse.add(leaf);
+}
+
+// --- Dining / Workspace Furniture Area ---
+const diningTable = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.15, 2.4), woodDarkMat);
+diningTable.position.set(5.5, 1.8, -2);
+diningTable.castShadow = true;
+diningTable.receiveShadow = true;
+dollhouse.add(diningTable);
+
+// 4 Table Legs
+const legGeo = new THREE.CylinderGeometry(0.07, 0.05, 1.7, 12);
+[[-3.8, -3], [-3.8, -1], [3.8, -3], [3.8, -1]].forEach(([lx, lz]) => {
+  const tleg = new THREE.Mesh(legGeo, brassMat);
+  tleg.position.set(5.5 + lx*0.48, 0.9, -2 + lz*0.35);
+  tleg.castShadow = true;
+  dollhouse.add(tleg);
+});
+
+// Dining Chairs
+for(let c = -1.2; c <= 1.2; c += 2.4) {
+  const seatA = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.9), primarySofaMat);
+  seatA.position.set(5.5 + c, 1.0, -3.2);
+  dollhouse.add(seatA);
+  sofaMeshes.push(seatA);
+
+  const backA = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.1), brassMat);
+  backA.position.set(5.5 + c, 1.5, -3.6);
+  dollhouse.add(backA);
+
+  const seatB = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.1, 0.9), primarySofaMat);
+  seatB.position.set(5.5 + c, 1.0, -0.8);
+  dollhouse.add(seatB);
+  sofaMeshes.push(seatB);
+
+  const backB = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.1), brassMat);
+  backB.position.set(5.5 + c, 1.5, -0.4);
+  dollhouse.add(backB);
+}
+
+// Hanging Pendant Lights above dining
+for(let p = -1; p <= 1; p += 2) {
+  const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.5, 8), brassMat);
+  cord.position.set(5.5 + p, 4.5, -2);
+  dollhouse.add(cord);
+
+  const pendant = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.5, 24, 1, true), brassMat);
+  pendant.position.set(5.5 + p, 3.2, -2);
+  pendant.rotation.x = Math.PI;
+  dollhouse.add(pendant);
+}
+
+// Real-world Bounding Dimension Markers (Subtle glowing lines)
+const dimGroup = new THREE.Group();
+const dimLineMat = new THREE.LineDashedMaterial({ color: 0xd4af37, dashSize: 0.4, gapSize: 0.2 });
+// Outer width line
+const ptsW = [new THREE.Vector3(-9, 0, 7.5), new THREE.Vector3(9, 0, 7.5)];
+const geoW = new THREE.BufferGeometry().setFromPoints(ptsW);
+const lineW = new THREE.Line(geoW, dimLineMat);
+lineW.computeLineDistances();
+dimGroup.add(lineW);
+
+// Outer depth line
+const ptsD = [new THREE.Vector3(9.5, 0, -7), new THREE.Vector3(9.5, 0, 7)];
+const geoD = new THREE.BufferGeometry().setFromPoints(ptsD);
+const lineD = new THREE.Line(geoD, dimLineMat);
+lineD.computeLineDistances();
+dimGroup.add(lineD);
+
+dollhouse.add(dimGroup);
+
+// --- Orbit & Tilt Navigation Controls with Inertia ---
+let isDragging = false;
+let prevMousePos = { x: 0, y: 0 };
+let rotVelocity = { x: 0, y: 0 };
+let rotTarget = { y: 0.35, x: 0.25 };
+let currentRot = { y: 0.35, x: 0.25 };
+let currentDistance = 32;
+let targetDistance = 32;
+
+dollhouse.rotation.y = currentRot.y;
+dollhouse.rotation.x = currentRot.x;
+
+const dom = renderer.domElement;
+dom.style.cursor = 'grab';
+
+dom.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  prevMousePos = { x: e.clientX, y: e.clientY };
+  dom.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    dom.style.cursor = 'grab';
+  }
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMousePos.x;
+  const dy = e.clientY - prevMousePos.y;
+  prevMousePos = { x: e.clientX, y: e.clientY };
+
+  rotVelocity.y = dx * 0.007;
+  rotVelocity.x = dy * 0.007;
+  rotTarget.y += rotVelocity.y;
+  rotTarget.x += rotVelocity.x;
+
+  // Clamp vertical tilt: from eye-level (~0.05) to steep top-down (~1.45)
+  rotTarget.x = Math.max(0.02, Math.min(1.48, rotTarget.x));
+});
+
+// Touch Navigation for mobile / trackpads
+dom.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+}, { passive: true });
+
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - prevMousePos.x;
+  const dy = e.touches[0].clientY - prevMousePos.y;
+  prevMousePos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+  rotTarget.y += dx * 0.009;
+  rotTarget.x = Math.max(0.02, Math.min(1.48, rotTarget.x + dy * 0.009));
+}, { passive: true });
+
+window.addEventListener('touchend', () => { isDragging = false; });
+
+// Scroll Wheel Zoom
+dom.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  targetDistance += e.deltaY * 0.025;
+  targetDistance = Math.max(16, Math.min(50, targetDistance));
+}, { passive: false });
+
+// Double click to Reset View
+dom.addEventListener('dblclick', () => {
+  resetCameraView();
+});
+
+function resetCameraView() {
+  rotTarget.y = 0.35;
+  rotTarget.x = 0.28;
+  targetDistance = 32;
+}
+
+// Global Camera Preset Handlers exposed for UI buttons
+window.setDollhouseCamera = function(preset) {
+  if (preset === 'isometric') {
+    rotTarget.y = 0.785; // 45 deg
+    rotTarget.x = 0.38;
+    targetDistance = 32;
+  } else if (preset === 'floorplan') {
+    rotTarget.y = 0;
+    rotTarget.x = 1.45; // top down
+    targetDistance = 36;
+  } else if (preset === 'front') {
+    rotTarget.y = 0;
+    rotTarget.x = 0.08;
+    targetDistance = 28;
+  } else if (preset === 'left') {
+    rotTarget.y = 1.57; // 90 deg
+    rotTarget.x = 0.15;
+    targetDistance = 28;
+  } else if (preset === 'right') {
+    rotTarget.y = -1.57;
+    rotTarget.x = 0.15;
+    targetDistance = 28;
+  } else if (preset === 'reset') {
+    resetCameraView();
+  }
+};
+
+window.setDollhouseZoom = function(val) {
+  // val between 0 (far) and 100 (close)
+  targetDistance = 50 - (val / 100) * 34;
+};
+
+// Material Swatch Swapper exposed for UI
+const swatchColorMap = {
+  'boucle': 0xf3efe6,       // Beige Bouclé
+  'cognac': 0x8e4a23,       // Cognac Leather
+  'velvet': 0x184234,       // Emerald Velvet
+  'oak': 0xd9c29d,          // White Oak
+  'brass': 0xd4af37,        // Brushed Brass
+  'charcoal': 0x24272c      // Textured Charcoal
+};
+
+window.applyMaterialSwatch = function(swatchKey) {
+  const hex = swatchColorMap[swatchKey] || 0xf3efe6;
+  sofaMeshes.forEach(mesh => {
+    mesh.material.color.setHex(hex);
+  });
+};
+
+// Studio Lighting Presets
+window.setStudioLighting = function(preset) {
+  if (preset === 'morning') {
+    mainSun.color.setHex(0xffe2b8); // Warm Golden Hour
+    mainSun.intensity = 2.4;
+    ambientLight.color.setHex(0xffe8dc);
+    ambientLight.intensity = 1.1;
+  } else if (preset === 'midday') {
+    mainSun.color.setHex(0xffffff); // Neutral diffused daylight
+    mainSun.intensity = 2.0;
+    ambientLight.color.setHex(0xeef3f8);
+    ambientLight.intensity = 1.3;
+  } else if (preset === 'twilight') {
+    mainSun.color.setHex(0x3e5b85); // Moody cool twilight + warm lamp fill
+    mainSun.intensity = 0.8;
+    ambientLight.color.setHex(0x1d2433);
+    ambientLight.intensity = 0.9;
+  }
+};
+
+// Toggle Bounding Dimensions & Annotations
+window.toggleDimensions = function(show) {
+  dimGroup.visible = show;
+};
+
+// Responsive resize
+window.addEventListener('resize', () => {
+  const w = container.clientWidth || window.innerWidth;
+  const h = container.clientHeight || window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+// Animation / Render loop with smooth easing
+let lastTime = 0;
+function animate(time) {
+  requestAnimationFrame(animate);
+
+  // Smooth rotation interpolation
+  currentRot.y += (rotTarget.y - currentRot.y) * 0.08;
+  currentRot.x += (rotTarget.x - currentRot.x) * 0.08;
+  currentDistance += (targetDistance - currentDistance) * 0.08;
+
+  dollhouse.rotation.y = currentRot.y;
+  dollhouse.rotation.x = currentRot.x;
+
+  // Position camera based on currentDistance
+  camera.position.set(0, 0, currentDistance);
+  camera.lookAt(0, 2.2, 0);
+
+  // Gentle subtle idle float if not user dragging
+  if (!isDragging) {
+    rotTarget.y += 0.0003;
+  }
+
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(animate);
+
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_3 -->
+</body>
+</html>
