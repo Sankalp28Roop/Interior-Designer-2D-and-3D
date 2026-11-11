@@ -41,6 +41,21 @@ An AI-powered 2D & 3D interior design platform that turns natural language promp
 
 ---
 
+## 🏗️ System Architecture & Native 2D → Interactive 3D Pipeline
+
+<p align="center">
+  <img src="assets/architecture_sequence.png" alt="AtelierAI End-to-End System Architecture Pipeline" width="100%" />
+</p>
+
+The platform implements a seamless, white-label client-to-engine hand-off:
+1. **Natural Language Input**: Client submits a prompt in Hindi, Hinglish, or English.
+2. **Gemini NLP & Prompt Engine**: Classifies spatial intent and enriches the request with architectural terminology, materials, camera angles, and diurnal lighting.
+3. **2D Photorealistic View**: Synthesizes and displays high-definition architectural elevation/interior cutaways.
+4. **Silent Hand-Off & 3D Compilation**: When the client clicks **"Convert 2D to 3D 360° View"**, the server delegates geometry extraction to the headless 3D pipeline in the background.
+5. **Interactive Three.js Viewport**: Loads the PBR mesh into the client canvas with full 360° orbit rotation, multi-directional panning, and real-world spatial measurements.
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: HTML5, Tailwind CSS, Three.js (r125), Lucide Icons, WebGL
