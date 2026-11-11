@@ -2,6 +2,10 @@
 
 An AI-powered 2D & 3D interior design platform that turns natural language prompts (in English and Hindi) into photorealistic 2D renders and real-time interactive 3D dollhouse models with full 360° circular orbit and multi-directional navigation.
 
+<p align="center">
+  <img src="assets/studio_preview.jpg" alt="AtelierAI Spatial 3D Interior Studio" width="100%" />
+</p>
+
 ---
 
 ## ✨ Features
